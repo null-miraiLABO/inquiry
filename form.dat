@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>お問い合わせ</title>
+<style>
+div
+{
+	margin:1em;
+}
+.err
+{
+	color:#ff0000;
+}
+</style>
+</head>
+
+<body>
+
+	<h2>アンケート</h2>
+	<form method="post" enctype="multipart/form-data">
+		{{Err}}
+		<div>
+			お名前:<br>
+			<input type="text" name="name" value="{{name}}" ><br>
+		</div>
+		<div>
+			メール:<br>
+			<input type="text" name="mail" value="{{mail}}" ><br>
+		</div>
+		<div>
+			お問い合わせ内容:<br>
+			<textarea name="mes">{{mes}}</textarea><br>
+		</div>
+		<div>
+			<input type="submit" name="chk" value="確認画面へ" ><br>
+		</div>
+	</form>
+
+</body>
+</html>
