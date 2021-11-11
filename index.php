@@ -1,4 +1,48 @@
 <?php
+//セッションスタート
+session_name('sesname');
+session_start();
+session_regenerate_id(true);
+
+//DB
+//設定部
+$user ="db_mizukinet";//サーバーの設定による
+$password = "4CBEpHSn";//サーバーの設定による
+$dbname = "db_mizukinet_1";//サーバーの設定による
+$dbtable = "otoiawase";//ここは自分で指定するところ
+
+//データベース初期化部
+$dsn  = "mysql:host=localhost;charset=utf8;dbname=".$dbname;
+$db = new PDO($dsn,$user,$password);
+
+//mysql文を使ってデータを得るための関数
+function queryrun($query)
+{
+	global $db;
+	$result = $db->query($query)->fetchAll();
+	return $result;
+}
+
+//こちらはprepare版、sqlインジェクションを防ぐ意味ではこっちのほうがいい。
+function queryrunpre($query,$param)
+{
+	global $db;
+	$pre = $db->prepare($query);
+	if($pre->execute($param))
+		return $pre->fetchAll();
+	else
+		return false;
+}
+
+//新しいデータを作る関数
+function newdata($name,$mail,$msg)
+{
+	global $db,$dbtable;
+	$insert_query = "INSERT INTO ".$dbtable." (name,mail,msg) ".
+					"VALUES(".$db->quote($name).",".$db->quote($mail).",".$db->quote($msg).")";
+
+	queryrunpre($insert_query,null);
+}
 
 //問い合わせ送り先
 $ownermail='tmc20247006@gmail.com';
@@ -14,11 +58,6 @@ $HTML_FIN_DAT='fin.dat';
 
 $LOGNAME='log/enq.log';
 $LOGTEMP='log.dat';
-
-//セッションスタート
-session_name('sesname');
-session_start();
-session_regenerate_id(true);
 
 if($_SERVER["REQUEST_METHOD"]=='POST'){
 
@@ -118,23 +157,8 @@ if(isset($_GET['chk'])){//確認画面だったら
 
 	mb_internal_encoding("UTF-8") ;
 	mb_send_mail($ownermail,$mailsub,htmlspecialchars_decode($usemail));
-/*
-	//このサンプルではログデータもテンプレート式でやってます
-	//なので置き換え用のデータ読み込んで作った置き換えキーと内容で置換
-	$newdata=str_replace($SearchKey,$SearchValue,file_get_contents($LOGTEMP));
-	$newdata=preg_replace("/{{.*?}}/","",$newdata);
 
-	//過去のログデータがあれば読み出します
-	$olddata=array();
-	if(file_exists($LOGNAME))
-		$olddata=file($LOGNAME);
-
-	//そのデータに新しいデータ追加して
-	$olddata[]=$newdata;
-
-	//そのまま書き込み
-	file_put_contents($LOGNAME,$olddata);
-	*/
+	newdata($_SESSION["name"],$_SESSION["mail"],$_SESSION["mes"]);
 
 	//何度も言うけど、本当はファイルロック処理をしないと
 	//データが吹っ飛ぶ可能性があります。
